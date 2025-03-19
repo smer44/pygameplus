@@ -9,7 +9,7 @@ class Sprite(DefaultSizeDrawable):
     You may define clipping of given surface by defining source_rect.
 
     '''
-
+    has_default_size = True
     def __init__(self, name, source_rect=None):
         DefaultSizeDrawable.__init__(self,name)
         self.source_rect = None
@@ -25,3 +25,8 @@ class Sprite(DefaultSizeDrawable):
 
     def get_size(self):
         return self.surface.get_size()
+
+    #TODO - check how this works on animated images, they need to implement own scale method
+    def __scale__(self,wh):
+        surface = self.surface
+        self.surface = pygame.transform.scale(surface, wh)

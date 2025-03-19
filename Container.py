@@ -10,20 +10,23 @@ class Container(AbstractDrawable):
     def extend(self,*children):
         self.children.extend(children)
 
-    def place(self, rect = (0,0,0,0)):
+    #TODO - what to do if place_scale_if_need is called for container?
+
+    def place(self, rect = None):
         placer = self.placer
-        placer.place_start(rect)
+        placer.place_start(self,rect)
         for child in self.children:
-            # TODO - this is bottom-up placing approach:
-            child_size = child.get_size()
-            child_rect = placer.place_next(child_size)
-            child.place(child_rect)
+
+            placer.place_next(child)
+
         outer_rect = placer.place_finaly()
         self.dest_rect = outer_rect
 
 
+
+
     def debug_places(self):
-        return ", ".join(c.debug_places() for c in self.children)
+        return f"Container({self.dest_rect}):(" +   ", ".join(c.debug_places() for c in self.children) + ")"
 
     def get_size(self):
         return self.dest_rect[2:]

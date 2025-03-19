@@ -1,7 +1,7 @@
 from MultiPlacer import MultiPlacer
 
 
-class HBox (MultiPlacer):
+class HBoxBottomUp (MultiPlacer):
 
     def __init__(self, name):
         MultiPlacer.__init__(self,name)
@@ -10,19 +10,24 @@ class HBox (MultiPlacer):
         self.xlast = None
         self.ylast = None
 
-    def place_start(self, rect):
+    def place_start(self, container,rect):
+        if rect is None:
+            rect = (0,0,0,0)
         self.rect = rect
         self.maxh = 0
         self.xlast = rect[0]
         self.ylast = rect[1]
 
 
-    def place_next(self,child_size):
+    def place_next(self,child):
+        child_size = child.get_size()
         w,h = child_size
         rect = (self.xlast, self.ylast, w,h)
         self.xlast += w
         self.maxh = max(self.maxh , h)
-        return rect
+
+        child.place(rect)
+
 
     def place_finaly(self):
         x,y,w,h = self.rect

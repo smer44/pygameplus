@@ -5,6 +5,7 @@ class AbstractDrawable:
 
     '''
     is_container = False
+    is_filler = False
     def __init__(self, name):
         assert isinstance(name, str)
         self.name = name
@@ -15,6 +16,26 @@ class AbstractDrawable:
             self.dest_rect =self.placer.place(rect)
         else:
             self.dest_rect = rect
+
+    def need_scale(self,rect):
+        if self.is_filler:
+            return False
+        w0,h0 = self.get_size()
+        x,y,w,h = rect
+        return w0 != w or h0 != h
+
+
+
+
+    def place_scale_if_need(self,rect):
+        need_scale = self.need_scale(rect)
+        AbstractDrawable.place(self,rect)
+        if need_scale:
+            self.__scale__(rect[2:])
+
+
+
+
 
 
     def check_placer(self, placer):
@@ -47,3 +68,4 @@ class AbstractDrawable:
 
     def debug_places(self):
         return f"{self.dest_rect}"
+
