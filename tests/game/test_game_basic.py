@@ -1,7 +1,7 @@
 
 
-from yge.turnbased.Game import Game
-from yge.turnbased.Sprite import Sprite
+from pygameplus.Game import Game
+from pygameplus.Sprite import Sprite
 
 obj = Sprite("test_image_load")
 

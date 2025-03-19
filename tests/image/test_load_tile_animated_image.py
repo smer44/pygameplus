@@ -1,5 +1,5 @@
-from yge.turnbased.Game import Game
-from yge.turnbased.AnimatedTiledSprite import AnimatedTiledSprite
+from pygameplus.Game import Game
+from pygameplus.AnimatedTiledSprite import AnimatedTiledSprite
 
 
 red_hat_w_cells = 12

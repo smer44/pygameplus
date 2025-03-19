@@ -1,7 +1,7 @@
 import pygame
 
 
-from yge.turnbased.Sprite import Sprite
+from Sprite import Sprite
 
 def get_current_source_rect(w_cells,h_cells,w_cell_size,h_cell_size,current_step):
     current_step = int(current_step)

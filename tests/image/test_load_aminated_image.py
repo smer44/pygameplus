@@ -1,5 +1,5 @@
-from yge.turnbased.AnimatedSprite import AnimatedSprite
-from yge.turnbased.Game import Game
+from pygameplus.AnimatedSprite import AnimatedSprite
+from pygameplus.Game import Game
 
 obj = AnimatedSprite("test_load_animated_image")
 
