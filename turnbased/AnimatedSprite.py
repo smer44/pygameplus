@@ -2,20 +2,16 @@
 import pygame
 
 from yge.turnbased.DefaultSizeDrawable import DefaultSizeDrawable
+from yge.turnbased.Sprite import Sprite
 
-class AnimatedSprite(DefaultSizeDrawable):
+
+class AnimatedSprite(Sprite):
 
     def __init__(self, name, source_rect=None):
-        DefaultSizeDrawable.__init__(self,name)
-        self.source_rect = None
-        self.surfaces = None
+        Sprite.__init__(self,name)
         self.current_surface = 0.0
-        self.dest_rect = (0,0)
         self.updating = True
-
-    def draw(self, surface, special_flags=0):
-        current_surface = int(self.current_surface)
-        surface.blit(self.surfaces[current_surface], self.dest_rect, self.source_rect, special_flags)
+        self.frame_speed = 0.1
 
 
     def load_next(self,filename):
@@ -26,15 +22,15 @@ class AnimatedSprite(DefaultSizeDrawable):
         self.surfaces = []
         for f in filenames:
             self.load_next(f)
+        self.surface = self.surfaces[0]
 
     def update(self):
         if self.updating:
-            self.current_surface += 0.1
+            self.current_surface += self.frame_speed
             if self.current_surface >= len(self.surfaces):
                 self.current_surface = 0
+            self.surface = self.surfaces[int(self.current_surface)]
 
-    def get_size(self):
-        return self.surfaces[int(self.current_surface)].get_size()
 
 
 
