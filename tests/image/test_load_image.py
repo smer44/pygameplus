@@ -1,5 +1,5 @@
 import pygame
-from yge.turnbased.Sprite import Sprite
+from Sprite import Sprite
 
 
 obj = Sprite("test_image_load")

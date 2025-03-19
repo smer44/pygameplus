@@ -1,5 +1,6 @@
 import pygame
-
+import ctypes
+ctypes.windll.user32.SetProcessDPIAware()
 
 class Game:
 
@@ -9,6 +10,16 @@ class Game:
         self.visible = [] # list of visible objects
         self.updated = [] # list of objects what get updated each tick
         self.root = None
+
+    def add(self, obj):
+        if obj.is_container:
+            for c in obj.children:
+                self.add(c)
+        else:
+            self.visible.append(obj)
+            if hasattr(obj,"update") and callable(obj.update):
+                self.updated.append(obj)
+
 
     def mouse_react(self, mouse_pos):
         pass

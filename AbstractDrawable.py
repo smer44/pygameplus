@@ -1,17 +1,26 @@
-class Drawable:
+class AbstractDrawable:
     '''
     The basic class of any component what is drawn by the engine.
-    Should i put lazyload variable here?
-    '''
+    Child classes can do lazy or eager load.
 
+    '''
+    is_container = False
     def __init__(self, name):
         assert isinstance(name, str)
         self.name = name
         self.placer = None
 
+    def place(self, rect):
+        if self.placer:
+            self.dest_rect =self.placer.place(rect)
+        else:
+            self.dest_rect = rect
+
+
     def check_placer(self, placer):
         #assert hasattr(self, 'placer') and self.placer is not None, f"{self}: has no placer"
-        return  placer is None or (hasattr(placer, 'place') and callable(placer.place))
+        return  placer is None or (hasattr(placer, 'place') and callable(placer.place) and hasattr(placer, "__place_inner__") and callable(placer.__place_inner__)) or \
+            (hasattr(placer, 'place_start') and hasattr(placer, 'place_next') and callable(placer.place_start) and callable(placer.place_next))
         #assert hasattr(placer, 'place'), f"{self}: placer {self.placer} has no method place"
         #assert callable(placer.place), f"{self}: placer {self.placer} has no method place"
 
@@ -35,3 +44,6 @@ class Drawable:
 
     def __str__(self):
         return f"<{self.__class__.__name__} : {self.name}>"
+
+    def debug_places(self):
+        return f"{self.dest_rect}"

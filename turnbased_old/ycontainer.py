@@ -1,7 +1,7 @@
 from yge.turnbased_old.yabstract import yDraw
 
 
-class yContainer(yDraw):
+class yContainer_Old(yDraw):
     def __init__(self, name,*children):
         yDraw.__init__(self,name)
         self.children = list(children)

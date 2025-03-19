@@ -11,9 +11,8 @@ class MultiPlacer:
         assert isinstance(name, str)
         self.name = name
 
-    def place(self,rect):
-        own_result = self.__place_inner__(rect)
-        if self.nextPlacer:
-            return self.nextPlacer.place(own_result)
-        else:
-            return own_result
+    # must implement place start and place next
+
+
+
+

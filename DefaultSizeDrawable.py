@@ -1,7 +1,7 @@
-from pygameplus.Drawable import Drawable
+from pygameplus.AbstractDrawable import AbstractDrawable
 
 
-class DefaultSizeDrawable(Drawable):
+class DefaultSizeDrawable(AbstractDrawable):
     '''
     Component what has default size,
     usually it is image or rendered text
@@ -12,7 +12,7 @@ class DefaultSizeDrawable(Drawable):
     '''
 
     def __init__(self, name):
-        Drawable.__init__(self,name)
+        AbstractDrawable.__init__(self,name)
 
 
 

@@ -12,6 +12,7 @@ class MonoPlacer:
 
     def __init__(self,name):
         assert isinstance(name, str) , f"yOneToOnePlacer.__init__: wrong {name=}"
+        #assert self.check_implementation()
         self.name = name
         self.nextPlacer = None
 
@@ -21,4 +22,8 @@ class MonoPlacer:
             return self.nextPlacer.place(own_result)
         else:
             return own_result
+
+    def check_implementation(self):
+        return hasattr(self, "__place_inner__") and callable(self.__place_inner__)
+
         
