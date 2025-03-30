@@ -222,7 +222,7 @@ class NamedHashObj:
 
 
 
-class DesigionInSituation(NamedHashObj,ObjDict):
+class DesigionByInvert(NamedHashObj, ObjDict):
 
     #entities = "energetic_talk calm_talk chat_books chat_movies chat_it flirt dance_classic dance_salsa dance_disco dance_hiphop dance_breakdance joke horny politeness rudeness abuse_other abuse_self listen_jazz rock pop techno classic"
 
@@ -247,7 +247,6 @@ class TextSequence(list):
     def __add__(self, other):
         assert isinstance(other, str)
         self.append(other)
-        pos = 0
 
     def next(self):
         if self.pos < len(self):
@@ -266,18 +265,19 @@ class TextSequence(list):
 
 
 # this are actions just
-shy_girl_on_date = DesigionInSituation("shy_girl_on_date")
+shy_girl_on_date = DesigionByInvert("shy_girl_on_date")
 shy_girl_on_date.be_shy = 13
 shy_girl_on_date.chat_it = 11
 shy_girl_on_date.small_talk = 5
 shy_girl_on_date.play_intelectual_game = 7
 shy_girl_on_date.smart_talk = 9
-shy_girl_on_date.ask_for_dance = 3
+shy_girl_on_date.ask_for_dance = 2
 
 shy_girl_on_date.finalize()
 
-for _ in range(25):
+for n in range(50):
     #print(shy_girl_on_date.temp)
+    print("step", n)
     shy_girl_on_date.decide()
 print(shy_girl_on_date.temp)
 

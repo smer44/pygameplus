@@ -1,4 +1,5 @@
-from yge.model.odict import OrderedDict
+from model.dfsp import dsfp
+from odict import odict
 log = []
 class GameEntity:
     """
@@ -35,18 +36,19 @@ class GameEntity:
     def get_displayed_value(self):
         return self.get_value()
 
-    def tick(self, ticks):
+    def tick(self, ticks, update_children):
         # Do not change with time
-        msg = f"GameEntity {self.name} tick SKIPPED"
+        msg = f"GameEntity {self.name} tick SKIPPED, because called tick from class GameEntity "
+        print(msg)
         log.append(msg)
         pass
 
     def __str__(self):
-        return f"{self.get_name()}#{self.idn} : {self.get_value()}"
+        return f"{self.__class__.__name__}#{self.idn}: {self.get_name()} : {self.get_value()}"
 
 
     def __repr__(self):
-        return f"{self.__class__.__name__} {self.get_name()} : {self.get_value()}"
+        return f"{self.__class__.__name__}#{self.idn}: {self.get_name()} : {self.get_value()}"
 
 class InfluencedEntity(GameEntity):
     '''
@@ -64,19 +66,21 @@ class InfluencedEntity(GameEntity):
         self.init(name,value)
         self.init_id()
 
+    def tick(self, ticks):
+        self.update_value(False)
 
     def init(self, name, value):
         GameEntity.init(self,name, value)
         self.modified_value = value
-        self.influences_dict = OrderedDict()
-        self.children_dict = dict()
+        self.influences_from_dict = odict()
+        self.influence_on_dict = dict()
 
 
     def get_value(self):
         return self.modified_value
 
     def __update_children__(self):
-        for child_name, child in self.children_dict.items():
+        for child_name, child in self.influence_on_dict.items():
             child.update_value()
 
     def deep_clone(self):
@@ -98,17 +102,17 @@ class InfluencedEntity(GameEntity):
             clone_dict[self] = cloned
             # clone influences:
             if self.tuple_influences:
-                for infl_name, (infl_obj, fn) in self.influences_dict.items():
+                for infl_name, (infl_obj, fn) in self.influences_from_dict.items():
                     known_infl_obj = infl_obj.__deep_clone__(clone_dict)
                     cloned.add_influence(known_infl_obj, fn,False,False)
             else:
-                for infl_name, infl_obj in self.influences_dict.items():
+                for infl_name, infl_obj in self.influences_from_dict.items():
                     known_infl_obj = infl_obj.__deep_clone__(clone_dict)
                     cloned.add_influence(known_infl_obj,False,False)
             #clone children:
-            for child_name, child_obj in self.children_dict.items():
+            for child_name, child_obj in self.influence_on_dict.items():
                 known_cloned_obj = child_obj.__deep_clone__(clone_dict)
-                self.children_dict[known_cloned_obj.get_name()] = known_cloned_obj
+                self.influence_on_dict[known_cloned_obj.get_name()] = known_cloned_obj
         return cloned
 
 
@@ -116,24 +120,32 @@ class InfluencedEntity(GameEntity):
 
 
 class InfluencedSeqEntity(InfluencedEntity):
+    """
+    Model of an entity, what gets influenced by other entities.
+    The influence is calculated sequentially - means, each
+    influence is applied one after another in the order they were added
+
+    """
     tuple_influences = True
 
     def add_influence(self, other, fn, update_value = True, update_children= True):
-        assert other.get_name() not in self.influences_dict
-        assert self.get_name() not in other.children_dict
+        assert other.get_name() not in self.influences_from_dict
+        assert self.get_name() not in other.influence_on_dict
         #self.influences_list.append((other, fn))
-        self.influences_dict[other.get_name()] = (other, fn)
-        other.children_dict[self.get_name()] = self
+        self.influences_from_dict[other.get_name()] = (other, fn)
+        other.influence_on_dict[self.get_name()] = self
         if update_value:
             self.update_value(update_children)
 
     def update_value(self, update_children= True):
         value = self.value
-        for other, fn in self.influences_dict.items():
+        for other, fn in self.influences_from_dict.items():
             value = fn(value, other.get_value())
         self.modified_value = value
         if update_children:
             self.__update_children__()
+
+
 
 
 class InfluencedParallelEntity(InfluencedEntity):
@@ -151,17 +163,18 @@ class InfluencedParallelEntity(InfluencedEntity):
 
 
     def add_influence(self, other, update_value = True, update_children= True):
-        assert other.get_name() not in self.influences_dict
-        assert self.get_name() not in other.children_dict
-        self.influences_dict[other.get_name()] = other
-        other.children_dict[self.get_name()] = self
+        assert other.get_name() not in self.influences_from_dict
+        assert self.get_name() not in other.influence_on_dict
+        self.influences_from_dict[other.get_name()] = other
+        other.influence_on_dict[self.get_name()] = self
         if update_value:
             self.update_value(update_children)
 
     def update_value(self, update_children= True):
         value = self.value
-        values = self.influences_dict.values()
-        print(f"{self}:{self.influences_dict.kvs()=}")
+        influences = self.influences_from_dict.values()
+        values = [i.value for i in influences]
+        print(f"update_value of {self}: influences : {self.influences_from_dict.items_list()}")
         value = self.fn(value,*values)
 
         self.modified_value = value
@@ -229,6 +242,38 @@ def can_stand_fn(value, hu , sle):
     print(f"called can_stand_fn:{value} , {hu} , {sle}, {res=}")
     return res
 
+
+class DfspTicker:
+
+    def __init__(self):
+        self.factors = []
+
+    def fn_children(self, factor):
+        return factor.influences_from_dict.values()
+
+    def fn_leaf(self,factor):
+        self.factors.append(factor)
+
+    def fn_aggregate(self,factor):
+        self.factors.append(factor)
+
+    def set_factors(self, root):
+        dsfp(root, self.fn_children,self.fn_aggregate, self.fn_leaf,False,True)
+
+    def tick_all(self):
+        for factor in self.factors:
+            # tick 1 time and do not update children:
+            print(f"DfspTicker.tick_all: calls tick for:" , factor)
+            factor.tick(1 )
+
+    def pp(self):
+        for factor in self.factors:
+            print(factor)
+
+
+
+
+
 hunger = DynamicParalellEntity("hunger", 0,0,100,10, lambda value: value)
 sleepy = DynamicParalellEntity("sleepy", 0,0,200,30, lambda value : value)
 canStand = InfluencedParallelEntity("canStand", 0,can_stand_fn)
@@ -236,6 +281,20 @@ canStand = InfluencedParallelEntity("canStand", 0,can_stand_fn)
 canStand.add_influence(hunger,False)
 canStand.add_influence(sleepy)
 
+#-- using ordered ticker
+
+ticker = DfspTicker()
+print("--- ticker test begin --- ")
+ticker.set_factors(canStand)
+
+ticker.pp()
+ticker.tick_all()
+ticker.pp()
+
+
+print("--- ticker test ended --- ")
+
+print("--- usual tick test ")
 print(canStand)
 hunger.tick()
 
@@ -257,3 +316,5 @@ print("--- cloned:---")
 
 canStand_cloned = canStand.deep_clone()
 print(canStand_cloned)
+
+
